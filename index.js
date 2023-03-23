@@ -41,7 +41,11 @@ app.get('/users/find', async (req, res) => {
 	try {
 		const user = await User.findAll({
 			where: {
-				[Op.or]: [{ uuid: value }, { name: value }, { email: value }],
+				[Op.or]: [
+					{ uuid: value },
+					{ name: { [Op.like]: `%${value}%` } },
+					{ email: { [Op.like]: `%${value}%` } },
+				],
 			},
 		});
 		if (user === null) {
