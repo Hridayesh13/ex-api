@@ -27,8 +27,9 @@ module.exports = {
 			email: {
 				type: DataTypes.STRING,
 				allowNull: false,
+				unique: true,
 			},
-			role: {
+			password: {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},

@@ -39,47 +39,54 @@ app.get('/users', async (req, res) => {
 app.get('/users/find', async (req, res) => {
 	const { value } = req.body;
 	try {
-		const user = await User.findAll({
-			where: {
-				[Op.or]: [
-					{ uuid: value },
-					{ name: { [Op.like]: `%${value}%` } },
-					{ email: { [Op.like]: `%${value}%` } },
-				],
-			},
-		});
-		if (user === null) {
-			return res.json(`could not find user`);
+		if (value) {
+			const user = await User.findAll({
+				where: {
+					[Op.or]: [
+						{ uuid: value },
+						{ name: { [Op.like]: `%${value}%` } },
+						{ email: { [Op.like]: `%${value}%` } },
+					],
+				},
+			});
+			console.log(user);
+			if (!user[0]) {
+				return res.json(`user not found`);
+			} else {
+				return res.json(user);
+			}
 		} else {
-			return res.json(user);
+			return res.json('cannot search with empty field.');
 		}
 	} catch (err) {
 		console.log(err);
-		return res.status(500).json(`could not find user`);
+		return res.status(500).json(`invalid params ---- ${err}`);
 	}
 });
 
 // UPDATE Password WITH UUID
-app.post('/users/update', async (req, res) => {
-	const { uuid, value } = req.body;
-
+app.put('/users/update', async (req, res) => {
+	const { uuid, name, email, password } = req.body;
+	console.log(name);
 	try {
-		await User.update(
-			{ password: value },
-			{
-				where: { uuid },
-			}
-		);
 		const user = await User.findOne({
 			where: { uuid },
 		});
+
+		if (name) user.name = name;
+		if (email) user.email = email;
+		if (password) user.password = password;
+		await user.save();
+
 		return res.json(user);
 	} catch (err) {
 		console.log(err);
 		return res.status(500).json(err);
 	}
-}); // DELETE USER WITH UUID
-app.post('/users/delete', async (req, res) => {
+});
+
+// DELETE USER WITH UUID
+app.delete('/users/delete', async (req, res) => {
 	const { uuid } = req.body;
 
 	try {
